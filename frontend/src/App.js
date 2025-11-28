@@ -138,6 +138,21 @@ function App() {
     });
   };
 
+  const handleWordJump = (cursorPosition) => {
+    const textUpToCursor = text.slice(0, cursorPosition).trim();
+    if (!textUpToCursor) {
+      setCurrentIndex(0);
+      setIsPlaying(false);
+      return;
+    }
+    
+    const wordsBeforeCursor = textUpToCursor.split(/\s+/).filter(Boolean);
+    const targetIndex = Math.min(wordsBeforeCursor.length - 1, words.length - 1);
+    
+    setCurrentIndex(Math.max(0, targetIndex));
+    setIsPlaying(false);
+  };
+
   return (
     <div className="app-shell">
       <HeroHeader />
@@ -161,6 +176,7 @@ function App() {
           onWpmChange={handleWpmChange}
           onUpload={handleUploadContent}
           onStep={handleStep}
+          onWordJump={handleWordJump}
         />
       </main>
     </div>

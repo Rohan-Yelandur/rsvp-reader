@@ -1,6 +1,6 @@
 export const DEFAULT_WPM = 200;
 export const MIN_WPM = 20;
-export const MAX_WPM = 1000;
+export const MAX_WPM = 800;
 
 export const TYPED_WORDS = [
   'books',
