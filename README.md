@@ -1,4 +1,4 @@
-# ZipRead
+# ZipReader
 
 Hosted at: _________
 
