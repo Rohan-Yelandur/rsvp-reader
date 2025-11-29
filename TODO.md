@@ -8,4 +8,15 @@ History of docs
 
 Instantly search for a word who's meaning you don't know
 
-Theater mode - force full screen, escape exits
+LIst of book sites: 
+OpenLibrary
+Internet Archive
+Project Gutenberg
+
+Scroll with word highlighting.
+
+Auto generate images from paragraphs of a story.
+
+Feedback form.
+
+Track web analytics in vercel

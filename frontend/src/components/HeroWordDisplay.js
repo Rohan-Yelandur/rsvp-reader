@@ -5,10 +5,11 @@ function HeroWordDisplay({
   displayedWord,
   fileName,
   fontSize,
+  isTheaterMode,
 }) {
   return (
     <>
-      {fileName && <div className="file-name-display">{fileName}</div>}
+      {fileName && !isTheaterMode && <div className="file-name-display">{fileName}</div>}
       <div 
         className={`hero-word ${shouldShowTyping ? 'typing' : 'playing'}`} 
         aria-live="polite"

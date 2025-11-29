@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { IoPause, IoPlay } from 'react-icons/io5';
 import { FaFileUpload } from 'react-icons/fa';
 import { FaChevronLeft, FaChevronRight, FaUniversalAccess } from 'react-icons/fa6';
-import { MdOutlineClear, MdLightMode, MdDarkMode } from 'react-icons/md';
+import { MdOutlineClear, MdLightMode, MdDarkMode, MdHistory } from 'react-icons/md';
 import { HiMiniMagnifyingGlassPlus } from 'react-icons/hi2';
 import { CiTextAlignCenter } from 'react-icons/ci';
 import { TbTheater } from 'react-icons/tb';
@@ -52,6 +52,10 @@ function RsvpPanel({
   onHighlightWordsChange,
   currentIndex,
   words,
+  fileHistory,
+  onHistoryToggle,
+  isHistoryVisible,
+  onLoadHistoryFile,
 }) {
   const fileInputRef = useRef(null);
   const wpmContainerRef = useRef(null);
@@ -59,6 +63,22 @@ function RsvpPanel({
   const chunkSizeContainerRef = useRef(null);
   const accessibilityContainerRef = useRef(null);
   const textInputRef = useRef(null);
+
+  // Auto-scroll to keep highlighted words visible
+  useEffect(() => {
+    if (!highlightWords || isTheaterMode || !textInputRef.current) {
+      return;
+    }
+
+    const highlightedSpan = textInputRef.current.querySelector('.highlighted-word');
+    if (highlightedSpan) {
+      highlightedSpan.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+    }
+  }, [currentIndex, highlightWords, isTheaterMode]);
 
   // Click outside handler to close WPM slider
   useEffect(() => {
@@ -411,6 +431,15 @@ function RsvpPanel({
           ) : (
             <MdDarkMode size={23} aria-hidden="true" color="#fff" />
           )}
+        </button>
+        <button
+          className="primary-button"
+          type="button"
+          aria-label="File history"
+          onClick={onHistoryToggle}
+          title="View file history"
+        >
+          <MdHistory size={23} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"

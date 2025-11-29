@@ -5,7 +5,9 @@ import HeroWordDisplay from './components/HeroWordDisplay';
 import RsvpPanel from './components/RsvpPanel';
 import Footer from './components/Footer';
 import TheaterControls from './components/TheaterControls';
-import { DEFAULT_WPM, MAX_WPM, MIN_WPM, TYPED_WORDS, TYPING_DELAYS, SENTENCE_END_DELAY_MULTIPLIER, COMMA_DELAY_MULTIPLIER } from './config';
+import { DEFAULT_WPM, MAX_WPM, MIN_WPM, TYPED_WORDS, TYPING_DELAYS, SENTENCE_END_DELAY_MULTIPLIER, COMMA_DELAY_MULTIPLIER, HIGHLIGHT_COLOR_LIGHT, HIGHLIGHT_COLOR_DARK } from './config';
+import { MdOutlineClear } from 'react-icons/md';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [text, setText] = useState('Upload or paste text to start reading using the Rapid Serial Visual Presentation (RSVP) technique, which can more than double your reading speed. Feel free to adjust the speed, click back to words you missed, and toggle narration!');
@@ -29,6 +31,8 @@ function App() {
   const [breakAtSentenceEnd, setBreakAtSentenceEnd] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [highlightWords, setHighlightWords] = useState(true);
+  const [fileHistory, setFileHistory] = useState([]);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
 
   const words = useMemo(() => {
     return text
@@ -40,8 +44,10 @@ function App() {
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.style.setProperty('--highlight-color', HIGHLIGHT_COLOR_DARK);
     } else {
       document.documentElement.removeAttribute('data-theme');
+      document.documentElement.style.setProperty('--highlight-color', HIGHLIGHT_COLOR_LIGHT);
     }
   }, [isDarkMode]);
 
@@ -129,7 +135,7 @@ function App() {
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [isPlaying, words.length, wpm, chunkSize, currentIndex, slowDownAtSentenceEnd]);
+  }, [isPlaying, words.length, wpm, chunkSize, currentIndex, slowDownAtSentenceEnd, words]);
 
   const displayedWord = useMemo(() => {
     if (words.length === 0) {
@@ -229,6 +235,20 @@ function App() {
     setIsPlaying(false);
     setCurrentIndex(0);
     setFileName(uploadedFileName);
+    
+    // Add to file history if it has a name
+    if (uploadedFileName) {
+      setFileHistory(prev => {
+        const newEntry = {
+          name: uploadedFileName,
+          content: content,
+          timestamp: Date.now()
+        };
+        // Keep only last 10 files
+        const updated = [newEntry, ...prev].slice(0, 10);
+        return updated;
+      });
+    }
   };
 
   const handleStep = (direction) => {
@@ -305,6 +325,21 @@ function App() {
     setHighlightWords(checked);
   };
 
+  const handleHistoryToggle = () => {
+    setIsHistoryVisible(prev => !prev);
+  };
+
+  const handleLoadHistoryFile = (index) => {
+    const file = fileHistory[index];
+    if (file) {
+      setText(file.content);
+      setFileName(file.name);
+      setCurrentIndex(0);
+      setIsPlaying(false);
+      setIsHistoryVisible(false);
+    }
+  };
+
   return (
     <div className={`app-shell ${isTheaterMode ? 'theater-mode' : ''}`}>
       {!isTheaterMode && <HeroHeader />}
@@ -317,6 +352,7 @@ function App() {
           displayedWord={displayedWord}
           fileName={fileName}
           fontSize={fontSize}
+          isTheaterMode={isTheaterMode}
         />
 
         {!isTheaterMode && (
@@ -361,6 +397,10 @@ function App() {
             onHighlightWordsChange={handleHighlightWordsChange}
             currentIndex={currentIndex}
             words={words}
+            fileHistory={fileHistory}
+            onHistoryToggle={handleHistoryToggle}
+            isHistoryVisible={isHistoryVisible}
+            onLoadHistoryFile={handleLoadHistoryFile}
           />
         )}
       </main>
@@ -375,6 +415,43 @@ function App() {
           onExit={handleTheaterModeToggle}
         />
       )}
+      
+      {isHistoryVisible && (
+        <div className="history-overlay" onClick={handleHistoryToggle}>
+          <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="history-header">
+              <h2>File History</h2>
+              <button 
+                className="history-close-button" 
+                onClick={handleHistoryToggle}
+                aria-label="Close history"
+                title="Close"
+              >
+                <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
+              </button>
+            </div>
+            <div className="history-content">
+              {fileHistory.length === 0 ? (
+                <p className="history-empty">No files in history</p>
+              ) : (
+                <div className="history-list">
+                  {fileHistory.map((file, index) => (
+                    <div 
+                      key={index} 
+                      className="history-item"
+                      onClick={() => handleLoadHistoryFile(index)}
+                    >
+                      <span className="history-filename">{file.name}</span>
+                      <span className="history-date">{new Date(file.timestamp).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      <Analytics />
     </div>
   );
 }
