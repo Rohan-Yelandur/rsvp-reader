@@ -6,7 +6,7 @@ import RsvpPanel from './components/RsvpPanel';
 import { DEFAULT_WPM, MAX_WPM, MIN_WPM, TYPED_WORDS, TYPING_DELAYS } from './config';
 
 function App() {
-  const [text, setText] = useState('The RSVP reader helps you consume text faster by flashing one word at a time. Upload anything and press PLAY.');
+  const [text, setText] = useState('Upload or paste text to start reading using the Rapid Serial Visual Presentation (RSVP) technique, which can more than double your reading speed. Feel free to adjust the speed, click back to words you missed, and toggle narration!');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wpm, setWpm] = useState(DEFAULT_WPM);
@@ -14,6 +14,9 @@ function App() {
   const [typedWord, setTypedWord] = useState('');
   const [isDeletingWord, setIsDeletingWord] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
+  const [fileName, setFileName] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [hasEverPlayed, setHasEverPlayed] = useState(false);
 
   const words = useMemo(() => {
     return text
@@ -21,6 +24,14 @@ function App() {
       .split(/\s+/)
       .filter(Boolean);
   }, [text]);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     // Restart stream when user edits text while paused
@@ -50,7 +61,7 @@ function App() {
   }, [isPlaying, words.length, wpm]);
 
   const displayedWord = words[currentIndex] || 'Ready?';
-  const shouldShowTyping = !isPlaying && currentIndex === 0;
+  const shouldShowTyping = !isPlaying && currentIndex === 0 && !hasEverPlayed;
   const isWordComplete =
     shouldShowTyping && !isDeletingWord && typedWord === TYPED_WORDS[phraseIndex];
 
@@ -101,6 +112,7 @@ function App() {
       }
       return !prev;
     });
+    setHasEverPlayed(true);
   };
 
   const handleWpmChange = (value) => {
@@ -115,15 +127,17 @@ function App() {
       setIsPlaying(false);
     }
     setCurrentIndex(0);
+    setFileName('');
   };
 
-  const handleUploadContent = (content) => {
+  const handleUploadContent = (content, uploadedFileName = '') => {
     if (!content) {
       return;
     }
     setText(content);
     setIsPlaying(false);
     setCurrentIndex(0);
+    setFileName(uploadedFileName);
   };
 
   const handleStep = (direction) => {
@@ -153,6 +167,18 @@ function App() {
     setIsPlaying(false);
   };
 
+  const handleClear = () => {
+    setText('');
+    setFileName('');
+    setIsPlaying(false);
+    setCurrentIndex(0);
+    setHasEverPlayed(false);
+  };
+
+  const handleThemeToggle = () => {
+    setIsDarkMode((prev) => !prev);
+  };
+
   return (
     <div className="app-shell">
       <HeroHeader />
@@ -163,6 +189,7 @@ function App() {
           typedWord={typedWord}
           isWordComplete={isWordComplete}
           displayedWord={displayedWord}
+          fileName={fileName}
         />
 
         <RsvpPanel
@@ -177,6 +204,9 @@ function App() {
           onUpload={handleUploadContent}
           onStep={handleStep}
           onWordJump={handleWordJump}
+          onClear={handleClear}
+          isDarkMode={isDarkMode}
+          onThemeToggle={handleThemeToggle}
         />
       </main>
     </div>

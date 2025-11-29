@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { IoPause, IoPlay } from 'react-icons/io5';
 import { FaFileUpload } from 'react-icons/fa';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { MdOutlineClear, MdLightMode, MdDarkMode } from 'react-icons/md';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set worker path to local file
@@ -19,6 +20,9 @@ function RsvpPanel({
   onUpload,
   onStep,
   onWordJump,
+  onClear,
+  isDarkMode,
+  onThemeToggle,
 }) {
   const fileInputRef = useRef(null);
 
@@ -49,8 +53,8 @@ function RsvpPanel({
           fullText += pageText + ' ';
         }
 
-        // Pass only text content
-        onUpload?.(fullText.trim());
+        // Pass text content and file name
+        onUpload?.(fullText.trim(), file.name);
       } catch (error) {
         console.error('Error parsing PDF:', error);
       }
@@ -63,7 +67,7 @@ function RsvpPanel({
       const reader = new FileReader();
       reader.onload = () => {
         const content = typeof reader.result === 'string' ? reader.result : '';
-        onUpload?.(content);
+        onUpload?.(content, file.name);
       };
       reader.readAsText(file);
       event.target.value = '';
@@ -106,36 +110,40 @@ function RsvpPanel({
           type="button"
           onClick={onToggle}
           aria-label={isPlaying ? 'Pause' : 'Play'}
+          title={isPlaying ? 'Pause reading' : 'Start reading'}
         >
           {isPlaying ? (
-            <IoPause size={28} aria-hidden="true" />
+            <IoPause size={23} aria-hidden="true" />
           ) : (
-            <IoPlay size={28} aria-hidden="true" />
+            <IoPlay size={23} aria-hidden="true" />
           )}
         </button>
         <button
-          className="secondary-button"
+          className="primary-button"
           type="button"
           aria-label="Upload text"
           onClick={handleUploadClick}
+          title="Upload text or PDF file"
         >
-          <FaFileUpload size={28} aria-hidden="true" color="#fff" />
+          <FaFileUpload size={23} aria-hidden="true" color="#fff" />
         </button>
         <button
-          className="secondary-button"
+          className="primary-button"
           type="button"
           aria-label="Previous word"
           onClick={() => onStep?.('back')}
+          title="Go to previous word"
         >
-          <FaChevronLeft size={18} aria-hidden="true" color="#fff" />
+          <FaChevronLeft size={23} aria-hidden="true" color="#fff" />
         </button>
         <button
-          className="secondary-button"
+          className="primary-button"
           type="button"
           aria-label="Next word"
           onClick={() => onStep?.('forward')}
+          title="Go to next word"
         >
-          <FaChevronRight size={18} aria-hidden="true" color="#fff" />
+          <FaChevronRight size={23} aria-hidden="true" color="#fff" />
         </button>
         <input
           ref={fileInputRef}
@@ -156,6 +164,28 @@ function RsvpPanel({
             onChange={(e) => onWpmChange(Number(e.target.value))}
           />
         </div>
+        <button
+          className="primary-button"
+          type="button"
+          aria-label="Clear text"
+          onClick={onClear}
+          title="Clear all text"
+        >
+          <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
+        </button>
+        <button
+          className="primary-button"
+          type="button"
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          onClick={onThemeToggle}
+          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode ? (
+            <MdLightMode size={23} aria-hidden="true" color="#fff" />
+          ) : (
+            <MdDarkMode size={23} aria-hidden="true" color="#fff" />
+          )}
+        </button>
         <span className="textarea-hint">Click any word to jump to it.</span>
       </div>
       <div className="textarea-stack">
@@ -165,7 +195,7 @@ function RsvpPanel({
           onChange={onTextChange}
           onClick={handleTextareaClick}
           onKeyDown={handleKeyDown}
-          placeholder="Paste text here..."
+          placeholder="Upload or paste text here"
           rows={5}
         />
       </div>

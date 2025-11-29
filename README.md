@@ -12,3 +12,8 @@ Start by cloning the repo and navigating to the frontend directory. Then run the
 2. ```npm start```
 
 ...and boom! The website should show up in your browser.
+
+## Credits
+Developed on the React.js framework.
+
+Used Mozilla's pdf web worker to parse pdfs.
