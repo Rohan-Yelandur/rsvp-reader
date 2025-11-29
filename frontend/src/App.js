@@ -9,6 +9,34 @@ import { DEFAULT_WPM, MAX_WPM, MIN_WPM, TYPED_WORDS, TYPING_DELAYS, SENTENCE_END
 import { MdOutlineClear } from 'react-icons/md';
 import { Analytics } from '@vercel/analytics/react';
 
+function AddBookmarkForm({ onAdd, currentWord }) {
+  const [label, setLabel] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (label.trim()) {
+      onAdd(label);
+      setLabel('');
+    }
+  };
+
+  return (
+    <form className="add-bookmark-form" onSubmit={handleSubmit}>
+      <input
+        type="text"
+        className="bookmark-input"
+        placeholder={`Bookmark current word: "${currentWord || ''}"`}
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        autoFocus
+      />
+      <button type="submit" className="add-bookmark-button">
+        Add Bookmark
+      </button>
+    </form>
+  );
+}
+
 function App() {
   const [text, setText] = useState('Upload or paste text to start reading using the Rapid Serial Visual Presentation (RSVP) technique, which can more than double your reading speed. Feel free to adjust the speed, click back to words you missed, and toggle narration!');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,6 +61,8 @@ function App() {
   const [highlightWords, setHighlightWords] = useState(true);
   const [fileHistory, setFileHistory] = useState([]);
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [isBookmarksVisible, setIsBookmarksVisible] = useState(false);
 
   const words = useMemo(() => {
     return text
@@ -340,6 +370,35 @@ function App() {
     }
   };
 
+  const handleBookmarksToggle = () => {
+    setIsBookmarksVisible(prev => !prev);
+  };
+
+  const handleAddBookmark = (label) => {
+    if (!label.trim()) {
+      return;
+    }
+    const newBookmark = {
+      label: label.trim(),
+      wordIndex: currentIndex,
+      timestamp: Date.now()
+    };
+    setBookmarks(prev => [newBookmark, ...prev]);
+  };
+
+  const handleLoadBookmark = (index) => {
+    const bookmark = bookmarks[index];
+    if (bookmark) {
+      setCurrentIndex(bookmark.wordIndex);
+      setIsPlaying(false);
+      setIsBookmarksVisible(false);
+    }
+  };
+
+  const handleDeleteBookmark = (index) => {
+    setBookmarks(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className={`app-shell ${isTheaterMode ? 'theater-mode' : ''}`}>
       {!isTheaterMode && <HeroHeader />}
@@ -401,6 +460,9 @@ function App() {
             onHistoryToggle={handleHistoryToggle}
             isHistoryVisible={isHistoryVisible}
             onLoadHistoryFile={handleLoadHistoryFile}
+            bookmarks={bookmarks}
+            onBookmarksToggle={handleBookmarksToggle}
+            isBookmarksVisible={isBookmarksVisible}
           />
         )}
       </main>
@@ -443,6 +505,52 @@ function App() {
                     >
                       <span className="history-filename">{file.name}</span>
                       <span className="history-date">{new Date(file.timestamp).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isBookmarksVisible && (
+        <div className="bookmarks-overlay" onClick={handleBookmarksToggle}>
+          <div className="bookmarks-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="bookmarks-header">
+              <h2>Bookmarks</h2>
+              <button 
+                className="bookmarks-close-button" 
+                onClick={handleBookmarksToggle}
+                aria-label="Close bookmarks"
+                title="Close"
+              >
+                <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
+              </button>
+            </div>
+            <div className="bookmarks-content">
+              <AddBookmarkForm onAdd={handleAddBookmark} currentWord={words[currentIndex]} />
+              {bookmarks.length === 0 ? (
+                <p className="bookmarks-empty">No bookmarks saved</p>
+              ) : (
+                <div className="bookmarks-list">
+                  {bookmarks.map((bookmark, index) => (
+                    <div 
+                      key={index} 
+                      className="bookmark-item"
+                    >
+                      <div className="bookmark-info" onClick={() => handleLoadBookmark(index)}>
+                        <span className="bookmark-label">{bookmark.label}</span>
+                        <span className="bookmark-word">Word {bookmark.wordIndex + 1}: {words[bookmark.wordIndex]}</span>
+                      </div>
+                      <button 
+                        className="bookmark-delete-button"
+                        onClick={() => handleDeleteBookmark(index)}
+                        aria-label="Delete bookmark"
+                        title="Delete"
+                      >
+                        <MdOutlineClear size={18} aria-hidden="true" color="#fff" />
+                      </button>
                     </div>
                   ))}
                 </div>

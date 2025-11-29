@@ -1,4 +1,4 @@
-export const DEFAULT_WPM = 200;
+export const DEFAULT_WPM = 250;
 export const MIN_WPM = 20;
 export const MAX_WPM = 800;
 export const SENTENCE_END_DELAY_MULTIPLIER = 2.5;

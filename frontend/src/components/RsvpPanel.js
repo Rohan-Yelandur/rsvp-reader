@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { IoPause, IoPlay } from 'react-icons/io5';
-import { FaFileUpload } from 'react-icons/fa';
+import { FaFileUpload, FaBookmark } from 'react-icons/fa';
 import { FaChevronLeft, FaChevronRight, FaUniversalAccess } from 'react-icons/fa6';
 import { MdOutlineClear, MdLightMode, MdDarkMode, MdHistory } from 'react-icons/md';
 import { HiMiniMagnifyingGlassPlus } from 'react-icons/hi2';
@@ -56,6 +56,9 @@ function RsvpPanel({
   onHistoryToggle,
   isHistoryVisible,
   onLoadHistoryFile,
+  bookmarks,
+  onBookmarksToggle,
+  isBookmarksVisible,
 }) {
   const fileInputRef = useRef(null);
   const wpmContainerRef = useRef(null);
@@ -435,6 +438,15 @@ function RsvpPanel({
         <button
           className="primary-button"
           type="button"
+          aria-label="Bookmarks"
+          onClick={onBookmarksToggle}
+          title="Bookmarks"
+        >
+          <FaBookmark size={20} aria-hidden="true" color="#fff" />
+        </button>
+        <button
+          className="primary-button"
+          type="button"
           aria-label="File history"
           onClick={onHistoryToggle}
           title="View file history"
@@ -467,12 +479,39 @@ function RsvpPanel({
           {textValue ? (
             (() => {
               const parts = [];
-              let currentPos = 0;
               
-              words.forEach((word, index) => {
+              // Virtualization: only render words in a window around current position
+              const WINDOW_SIZE = 300; // Render ±300 words around current position
+              const startIndex = Math.max(0, currentIndex - WINDOW_SIZE);
+              const endIndex = Math.min(words.length, currentIndex + WINDOW_SIZE);
+              
+              // Find the text position for the start of our window
+              let windowStartPos = 0;
+              for (let i = 0; i < startIndex; i++) {
+                const wordPos = textValue.indexOf(words[i], windowStartPos);
+                if (wordPos !== -1) {
+                  windowStartPos = wordPos + words[i].length;
+                }
+              }
+              
+              // If we're not starting at the beginning, add ellipsis
+              if (startIndex > 0) {
+                parts.push(
+                  <span key="start-ellipsis" className="word-space" style={{ opacity: 0.5 }}>
+                    ...
+                  </span>
+                );
+              }
+              
+              let currentPos = windowStartPos;
+              
+              // Only process words in the visible window
+              for (let index = startIndex; index < endIndex; index++) {
+                const word = words[index];
+                
                 // Find the word in the text starting from current position
                 const wordStart = textValue.indexOf(word, currentPos);
-                if (wordStart === -1) return;
+                if (wordStart === -1) continue;
                 
                 // Add any text before this word (whitespace/newlines) as plain text
                 if (wordStart > currentPos) {
@@ -496,13 +535,13 @@ function RsvpPanel({
                 );
                 
                 currentPos = wordStart + word.length;
-              });
+              }
               
-              // Add any remaining text after the last word
-              if (currentPos < textValue.length) {
+              // If we're not at the end, add ellipsis
+              if (endIndex < words.length) {
                 parts.push(
-                  <span key="end-space" className="word-space">
-                    {textValue.substring(currentPos)}
+                  <span key="end-ellipsis" className="word-space" style={{ opacity: 0.5 }}>
+                    ...
                   </span>
                 );
               }

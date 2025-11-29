@@ -20,3 +20,5 @@ Auto generate images from paragraphs of a story.
 Feedback form.
 
 Track web analytics in vercel
+
+Book marks and remember where the user left off.
