@@ -47,7 +47,9 @@ function App() {
   const [isDeletingWord, setIsDeletingWord] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [fileName, setFileName] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const [hasEverPlayed, setHasEverPlayed] = useState(false);
   const [isWpmSliderVisible, setIsWpmSliderVisible] = useState(false);
   const [fontSize, setFontSize] = useState(5);
@@ -63,6 +65,7 @@ function App() {
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
   const [bookmarks, setBookmarks] = useState([]);
   const [isBookmarksVisible, setIsBookmarksVisible] = useState(false);
+  const [orpEnabled, setOrpEnabled] = useState(false);
 
   const words = useMemo(() => {
     return text
@@ -355,6 +358,10 @@ function App() {
     setHighlightWords(checked);
   };
 
+  const handleOrpChange = (checked) => {
+    setOrpEnabled(checked);
+  };
+
   const handleHistoryToggle = () => {
     setIsHistoryVisible(prev => !prev);
   };
@@ -368,6 +375,10 @@ function App() {
       setIsPlaying(false);
       setIsHistoryVisible(false);
     }
+  };
+
+  const handleDeleteHistoryFile = (index) => {
+    setFileHistory(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleBookmarksToggle = () => {
@@ -412,6 +423,7 @@ function App() {
           fileName={fileName}
           fontSize={fontSize}
           isTheaterMode={isTheaterMode}
+          orpEnabled={orpEnabled}
         />
 
         {!isTheaterMode && (
@@ -454,6 +466,8 @@ function App() {
             onTheaterModeToggle={handleTheaterModeToggle}
             highlightWords={highlightWords}
             onHighlightWordsChange={handleHighlightWordsChange}
+            orpEnabled={orpEnabled}
+            onOrpChange={handleOrpChange}
             currentIndex={currentIndex}
             words={words}
             fileHistory={fileHistory}
@@ -501,10 +515,22 @@ function App() {
                     <div 
                       key={index} 
                       className="history-item"
-                      onClick={() => handleLoadHistoryFile(index)}
                     >
-                      <span className="history-filename">{file.name}</span>
-                      <span className="history-date">{new Date(file.timestamp).toLocaleString()}</span>
+                      <div className="history-info" onClick={() => handleLoadHistoryFile(index)}>
+                        <span className="history-filename">{file.name}</span>
+                        <span className="history-date">{new Date(file.timestamp).toLocaleString()}</span>
+                      </div>
+                      <button 
+                        className="history-delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteHistoryFile(index);
+                        }}
+                        aria-label="Delete file"
+                        title="Delete"
+                      >
+                        <MdOutlineClear size={18} aria-hidden="true" color="#fff" />
+                      </button>
                     </div>
                   ))}
                 </div>

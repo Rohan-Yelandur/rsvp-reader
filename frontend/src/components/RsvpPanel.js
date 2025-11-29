@@ -50,6 +50,8 @@ function RsvpPanel({
   onTheaterModeToggle,
   highlightWords,
   onHighlightWordsChange,
+  orpEnabled,
+  onOrpChange,
   currentIndex,
   words,
   fileHistory,
@@ -260,9 +262,9 @@ function RsvpPanel({
           title={isPlaying ? 'Pause reading' : 'Start reading'}
         >
           {isPlaying ? (
-            <IoPause size={23} aria-hidden="true" />
+            <IoPause size={20} aria-hidden="true" />
           ) : (
-            <IoPlay size={23} aria-hidden="true" />
+            <IoPlay size={20} aria-hidden="true" />
           )}
         </button>
         <button
@@ -272,7 +274,7 @@ function RsvpPanel({
           onClick={handleUploadClick}
           title="Upload text or PDF file"
         >
-          <FaFileUpload size={23} aria-hidden="true" color="#fff" />
+          <FaFileUpload size={20} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"
@@ -281,7 +283,7 @@ function RsvpPanel({
           onClick={() => onStep?.('back')}
           title="Go to previous word"
         >
-          <FaChevronLeft size={23} aria-hidden="true" color="#fff" />
+          <FaChevronLeft size={20} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"
@@ -290,7 +292,7 @@ function RsvpPanel({
           onClick={() => onStep?.('forward')}
           title="Go to next word"
         >
-          <FaChevronRight size={23} aria-hidden="true" color="#fff" />
+          <FaChevronRight size={20} aria-hidden="true" color="#fff" />
         </button>
         <input
           ref={fileInputRef}
@@ -332,7 +334,7 @@ function RsvpPanel({
             onClick={onFontSizeToggle}
             title="Adjust font size"
           >
-            <HiMiniMagnifyingGlassPlus size={23} aria-hidden="true" color="#fff" />
+            <HiMiniMagnifyingGlassPlus size={20} aria-hidden="true" color="#fff" />
           </button>
           {isFontSizeSliderVisible && (
             <div className="slider-group">
@@ -357,7 +359,7 @@ function RsvpPanel({
             onClick={onChunkSizeToggle}
             title="Adjust chunk size"
           >
-            <CiTextAlignCenter size={23} aria-hidden="true" color="#fff" style={{ transform: 'rotate(90deg)' }} />
+            <CiTextAlignCenter size={20} aria-hidden="true" color="#fff" style={{ transform: 'rotate(90deg)' }} />
           </button>
           {isChunkSizeSliderVisible && (
             <div className="slider-group">
@@ -382,7 +384,7 @@ function RsvpPanel({
             onClick={onAccessibilityToggle}
             title="Toggle adaptive features"
           >
-            <FaUniversalAccess size={23} aria-hidden="true" color="#fff" />
+            <FaUniversalAccess size={20} aria-hidden="true" color="#fff" />
           </button>
           {isAccessibilityVisible && (
             <div className="checkbox-group">
@@ -410,6 +412,14 @@ function RsvpPanel({
                   onChange={(e) => onHighlightWordsChange(e.target.checked)}
                 />
               </label>
+              <label htmlFor="orp-checkbox" title="Optimal Recognition Point">
+                <input
+                  id="orp-checkbox"
+                  type="checkbox"
+                  checked={orpEnabled}
+                  onChange={(e) => onOrpChange(e.target.checked)}
+                />
+              </label>
             </div>
           )}
         </div>
@@ -420,7 +430,7 @@ function RsvpPanel({
           onClick={onTheaterModeToggle}
           title="Toggle theater mode"
         >
-          <TbTheater size={23} aria-hidden="true" color="#fff" />
+          <TbTheater size={20} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"
@@ -430,9 +440,9 @@ function RsvpPanel({
           title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {isDarkMode ? (
-            <MdLightMode size={23} aria-hidden="true" color="#fff" />
+            <MdLightMode size={20} aria-hidden="true" color="#fff" />
           ) : (
-            <MdDarkMode size={23} aria-hidden="true" color="#fff" />
+            <MdDarkMode size={20} aria-hidden="true" color="#fff" />
           )}
         </button>
         <button
@@ -442,7 +452,7 @@ function RsvpPanel({
           onClick={onBookmarksToggle}
           title="Bookmarks"
         >
-          <FaBookmark size={20} aria-hidden="true" color="#fff" />
+          <FaBookmark size={18} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"
@@ -451,7 +461,7 @@ function RsvpPanel({
           onClick={onHistoryToggle}
           title="View file history"
         >
-          <MdHistory size={23} aria-hidden="true" color="#fff" />
+          <MdHistory size={20} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"
@@ -460,7 +470,7 @@ function RsvpPanel({
           onClick={onClear}
           title="Clear all text"
         >
-          <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
+          <MdOutlineClear size={20} aria-hidden="true" color="#fff" />
         </button>
         <span className="textarea-hint">Click any word to jump to it.</span>
       </div>
