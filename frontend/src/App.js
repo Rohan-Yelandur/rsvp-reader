@@ -3,7 +3,9 @@ import './App.css';
 import HeroHeader from './components/HeroHeader';
 import HeroWordDisplay from './components/HeroWordDisplay';
 import RsvpPanel from './components/RsvpPanel';
-import { DEFAULT_WPM, MAX_WPM, MIN_WPM, TYPED_WORDS, TYPING_DELAYS } from './config';
+import Footer from './components/Footer';
+import TheaterControls from './components/TheaterControls';
+import { DEFAULT_WPM, MAX_WPM, MIN_WPM, TYPED_WORDS, TYPING_DELAYS, SENTENCE_END_DELAY_MULTIPLIER, COMMA_DELAY_MULTIPLIER } from './config';
 
 function App() {
   const [text, setText] = useState('Upload or paste text to start reading using the Rapid Serial Visual Presentation (RSVP) technique, which can more than double your reading speed. Feel free to adjust the speed, click back to words you missed, and toggle narration!');
@@ -17,6 +19,15 @@ function App() {
   const [fileName, setFileName] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [hasEverPlayed, setHasEverPlayed] = useState(false);
+  const [isWpmSliderVisible, setIsWpmSliderVisible] = useState(false);
+  const [fontSize, setFontSize] = useState(5);
+  const [isFontSizeSliderVisible, setIsFontSizeSliderVisible] = useState(false);
+  const [chunkSize, setChunkSize] = useState(1);
+  const [isChunkSizeSliderVisible, setIsChunkSizeSliderVisible] = useState(false);
+  const [isAccessibilityVisible, setIsAccessibilityVisible] = useState(false);
+  const [slowDownAtSentenceEnd, setSlowDownAtSentenceEnd] = useState(true);
+  const [breakAtSentenceEnd, setBreakAtSentenceEnd] = useState(false);
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
 
   const words = useMemo(() => {
     return text
@@ -46,21 +57,58 @@ function App() {
       return undefined;
     }
 
-    const intervalMs = Math.round(60000 / wpm);
+    // Check if current chunk contains punctuation
+    const currentChunk = words.slice(currentIndex, currentIndex + chunkSize).join(' ');
+    const hasSentenceEnd = /[.!?]/.test(currentChunk);
+    const hasCommaSemicolon = /[,;]/.test(currentChunk);
+    
+    // Apply delay multiplier based on punctuation type
+    const baseIntervalMs = Math.round(60000 / wpm);
+    let intervalMs = baseIntervalMs;
+    
+    if (slowDownAtSentenceEnd) {
+      if (hasSentenceEnd) {
+        intervalMs = baseIntervalMs * SENTENCE_END_DELAY_MULTIPLIER;
+      } else if (hasCommaSemicolon) {
+        intervalMs = baseIntervalMs * COMMA_DELAY_MULTIPLIER;
+      }
+    }
+    
     const timer = setInterval(() => {
       setCurrentIndex((prev) => {
-        if (prev + 1 >= words.length) {
+        const nextIndex = prev + chunkSize;
+        if (nextIndex >= words.length) {
           setIsPlaying(false);
           return prev;
         }
-        return prev + 1;
+        return nextIndex;
       });
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [isPlaying, words.length, wpm]);
+  }, [isPlaying, words.length, wpm, chunkSize, currentIndex, slowDownAtSentenceEnd]);
 
-  const displayedWord = words[currentIndex] || 'Ready?';
+  const displayedWord = useMemo(() => {
+    if (words.length === 0) {
+      return 'Ready?';
+    }
+    
+    let chunk = words.slice(currentIndex, currentIndex + chunkSize);
+    
+    // If breakAtSentenceEnd is enabled, chunkSize > 1, truncate at sentence-ending punctuation
+    if (breakAtSentenceEnd && chunkSize > 1) {
+      for (let i = 0; i < chunk.length; i++) {
+        if (/[.!?]/.test(chunk[i])) {
+          // Include the word with the punctuation, but cut off the rest
+          chunk = chunk.slice(0, i + 1);
+          break;
+        }
+      }
+    }
+    
+    return chunk.join(' ');
+  }, [words, currentIndex, chunkSize, breakAtSentenceEnd]);
+  
   const shouldShowTyping = !isPlaying && currentIndex === 0 && !hasEverPlayed;
   const isWordComplete =
     shouldShowTyping && !isDeletingWord && typedWord === TYPED_WORDS[phraseIndex];
@@ -143,10 +191,10 @@ function App() {
   const handleStep = (direction) => {
     setCurrentIndex((prev) => {
       if (direction === 'back') {
-        return Math.max(0, prev - 1);
+        return Math.max(0, prev - chunkSize);
       }
       if (direction === 'forward') {
-        return Math.min(words.length - 1, prev + 1);
+        return Math.min(words.length - 1, prev + chunkSize);
       }
       return prev;
     });
@@ -179,9 +227,45 @@ function App() {
     setIsDarkMode((prev) => !prev);
   };
 
+  const handleWpmToggle = () => {
+    setIsWpmSliderVisible((prev) => !prev);
+  };
+
+  const handleFontSizeToggle = () => {
+    setIsFontSizeSliderVisible((prev) => !prev);
+  };
+
+  const handleFontSizeChange = (value) => {
+    setFontSize(value);
+  };
+
+  const handleChunkSizeToggle = () => {
+    setIsChunkSizeSliderVisible((prev) => !prev);
+  };
+
+  const handleChunkSizeChange = (value) => {
+    setChunkSize(value);
+  };
+
+  const handleAccessibilityToggle = () => {
+    setIsAccessibilityVisible((prev) => !prev);
+  };
+
+  const handleSlowDownChange = (checked) => {
+    setSlowDownAtSentenceEnd(checked);
+  };
+
+  const handleBreakAtSentenceEndChange = (checked) => {
+    setBreakAtSentenceEnd(checked);
+  };
+
+  const handleTheaterModeToggle = () => {
+    setIsTheaterMode((prev) => !prev);
+  };
+
   return (
-    <div className="app-shell">
-      <HeroHeader />
+    <div className={`app-shell ${isTheaterMode ? 'theater-mode' : ''}`}>
+      {!isTheaterMode && <HeroHeader />}
 
       <main className="hero-body">
         <HeroWordDisplay
@@ -190,25 +274,61 @@ function App() {
           isWordComplete={isWordComplete}
           displayedWord={displayedWord}
           fileName={fileName}
+          fontSize={fontSize}
         />
 
-        <RsvpPanel
+        {!isTheaterMode && (
+          <RsvpPanel
+            isPlaying={isPlaying}
+            onToggle={handleToggle}
+            textValue={text}
+            onTextChange={handleTextChange}
+            wpm={wpm}
+            minWpm={MIN_WPM}
+            maxWpm={MAX_WPM}
+            onWpmChange={handleWpmChange}
+            onUpload={handleUploadContent}
+            onStep={handleStep}
+            onWordJump={handleWordJump}
+            onClear={handleClear}
+            isDarkMode={isDarkMode}
+            onThemeToggle={handleThemeToggle}
+            isWpmSliderVisible={isWpmSliderVisible}
+            onWpmToggle={handleWpmToggle}
+            onWpmSliderClose={() => setIsWpmSliderVisible(false)}
+            fontSize={fontSize}
+            isFontSizeSliderVisible={isFontSizeSliderVisible}
+            onFontSizeToggle={handleFontSizeToggle}
+            onFontSizeChange={handleFontSizeChange}
+            onFontSizeSliderClose={() => setIsFontSizeSliderVisible(false)}
+            chunkSize={chunkSize}
+            isChunkSizeSliderVisible={isChunkSizeSliderVisible}
+            onChunkSizeToggle={handleChunkSizeToggle}
+            onChunkSizeChange={handleChunkSizeChange}
+            onChunkSizeSliderClose={() => setIsChunkSizeSliderVisible(false)}
+            isAccessibilityVisible={isAccessibilityVisible}
+            onAccessibilityToggle={handleAccessibilityToggle}
+            onAccessibilityClose={() => setIsAccessibilityVisible(false)}
+            slowDownAtSentenceEnd={slowDownAtSentenceEnd}
+            onSlowDownChange={handleSlowDownChange}
+            breakAtSentenceEnd={breakAtSentenceEnd}
+            onBreakAtSentenceEndChange={handleBreakAtSentenceEndChange}
+            isTheaterMode={isTheaterMode}
+            onTheaterModeToggle={handleTheaterModeToggle}
+          />
+        )}
+      </main>
+      
+      {!isTheaterMode && <Footer />}
+      
+      {isTheaterMode && (
+        <TheaterControls
           isPlaying={isPlaying}
           onToggle={handleToggle}
-          textValue={text}
-          onTextChange={handleTextChange}
-          wpm={wpm}
-          minWpm={MIN_WPM}
-          maxWpm={MAX_WPM}
-          onWpmChange={handleWpmChange}
-          onUpload={handleUploadContent}
           onStep={handleStep}
-          onWordJump={handleWordJump}
-          onClear={handleClear}
-          isDarkMode={isDarkMode}
-          onThemeToggle={handleThemeToggle}
+          onExit={handleTheaterModeToggle}
         />
-      </main>
+      )}
     </div>
   );
 }

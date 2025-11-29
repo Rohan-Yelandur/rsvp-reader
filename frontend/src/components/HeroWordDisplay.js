@@ -4,11 +4,16 @@ function HeroWordDisplay({
   isWordComplete,
   displayedWord,
   fileName,
+  fontSize,
 }) {
   return (
     <>
       {fileName && <div className="file-name-display">{fileName}</div>}
-      <div className={`hero-word ${shouldShowTyping ? 'typing' : 'playing'}`} aria-live="polite">
+      <div 
+        className={`hero-word ${shouldShowTyping ? 'typing' : 'playing'}`} 
+        aria-live="polite"
+        style={!shouldShowTyping ? { fontSize: `${fontSize}rem` } : {}}
+      >
       {shouldShowTyping ? (
         <span className="typed-line">
           <span className="static-word">Speed-read your</span>

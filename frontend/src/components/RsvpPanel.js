@@ -1,8 +1,11 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { IoPause, IoPlay } from 'react-icons/io5';
 import { FaFileUpload } from 'react-icons/fa';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { FaChevronLeft, FaChevronRight, FaUniversalAccess } from 'react-icons/fa6';
 import { MdOutlineClear, MdLightMode, MdDarkMode } from 'react-icons/md';
+import { HiMiniMagnifyingGlassPlus } from 'react-icons/hi2';
+import { CiTextAlignCenter } from 'react-icons/ci';
+import { TbTheater } from 'react-icons/tb';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set worker path to local file
@@ -23,8 +26,106 @@ function RsvpPanel({
   onClear,
   isDarkMode,
   onThemeToggle,
+  isWpmSliderVisible,
+  onWpmToggle,
+  onWpmSliderClose,
+  fontSize,
+  isFontSizeSliderVisible,
+  onFontSizeToggle,
+  onFontSizeChange,
+  onFontSizeSliderClose,
+  chunkSize,
+  isChunkSizeSliderVisible,
+  onChunkSizeToggle,
+  onChunkSizeChange,
+  onChunkSizeSliderClose,
+  isAccessibilityVisible,
+  onAccessibilityToggle,
+  onAccessibilityClose,
+  slowDownAtSentenceEnd,
+  onSlowDownChange,
+  breakAtSentenceEnd,
+  onBreakAtSentenceEndChange,
+  isTheaterMode,
+  onTheaterModeToggle,
 }) {
   const fileInputRef = useRef(null);
+  const wpmContainerRef = useRef(null);
+  const fontSizeContainerRef = useRef(null);
+  const chunkSizeContainerRef = useRef(null);
+  const accessibilityContainerRef = useRef(null);
+
+  // Click outside handler to close WPM slider
+  useEffect(() => {
+    if (!isWpmSliderVisible) {
+      return;
+    }
+
+    const handleClickOutside = (event) => {
+      if (wpmContainerRef.current && !wpmContainerRef.current.contains(event.target)) {
+        onWpmSliderClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isWpmSliderVisible, onWpmSliderClose]);
+
+  // Click outside handler to close font size slider
+  useEffect(() => {
+    if (!isFontSizeSliderVisible) {
+      return;
+    }
+
+    const handleClickOutside = (event) => {
+      if (fontSizeContainerRef.current && !fontSizeContainerRef.current.contains(event.target)) {
+        onFontSizeSliderClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFontSizeSliderVisible, onFontSizeSliderClose]);
+
+  // Click outside handler to close chunk size slider
+  useEffect(() => {
+    if (!isChunkSizeSliderVisible) {
+      return;
+    }
+
+    const handleClickOutside = (event) => {
+      if (chunkSizeContainerRef.current && !chunkSizeContainerRef.current.contains(event.target)) {
+        onChunkSizeSliderClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isChunkSizeSliderVisible, onChunkSizeSliderClose]);
+
+  // Click outside handler to close accessibility panel
+  useEffect(() => {
+    if (!isAccessibilityVisible) {
+      return;
+    }
+
+    const handleClickOutside = (event) => {
+      if (accessibilityContainerRef.current && !accessibilityContainerRef.current.contains(event.target)) {
+        onAccessibilityClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAccessibilityVisible, onAccessibilityClose]);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -152,26 +253,120 @@ function RsvpPanel({
           hidden
           onChange={handleFileChange}
         />
-        <div className="slider-group">
-          <label htmlFor="wpm-slider">{wpm} WPM</label>
-          <input
-            id="wpm-slider"
-            type="range"
-            min={minWpm}
-            max={maxWpm}
-            step={10}
-            value={wpm}
-            onChange={(e) => onWpmChange(Number(e.target.value))}
-          />
+        <div className="wpm-container" ref={wpmContainerRef}>
+          <button
+            className="primary-button wpm-button"
+            type="button"
+            aria-label="WPM settings"
+            onClick={onWpmToggle}
+            title="Adjust reading speed"
+          >
+            WPM
+          </button>
+          {isWpmSliderVisible && (
+            <div className="slider-group">
+              <label htmlFor="wpm-slider">{wpm} WPM</label>
+              <input
+                id="wpm-slider"
+                type="range"
+                min={minWpm}
+                max={maxWpm}
+                step={10}
+                value={wpm}
+                onChange={(e) => onWpmChange(Number(e.target.value))}
+              />
+            </div>
+          )}
+        </div>
+        <div className="wpm-container" ref={fontSizeContainerRef}>
+          <button
+            className="primary-button wpm-button"
+            type="button"
+            aria-label="Font size settings"
+            onClick={onFontSizeToggle}
+            title="Adjust font size"
+          >
+            <HiMiniMagnifyingGlassPlus size={23} aria-hidden="true" color="#fff" />
+          </button>
+          {isFontSizeSliderVisible && (
+            <div className="slider-group">
+              <label htmlFor="font-size-slider">{fontSize}</label>
+              <input
+                id="font-size-slider"
+                type="range"
+                min={2}
+                max={10}
+                step={0.5}
+                value={fontSize}
+                onChange={(e) => onFontSizeChange(Number(e.target.value))}
+              />
+            </div>
+          )}
+        </div>
+        <div className="wpm-container" ref={chunkSizeContainerRef}>
+          <button
+            className="primary-button wpm-button"
+            type="button"
+            aria-label="Chunk size settings"
+            onClick={onChunkSizeToggle}
+            title="Adjust chunk size"
+          >
+            <CiTextAlignCenter size={23} aria-hidden="true" color="#fff" style={{ transform: 'rotate(90deg)' }} />
+          </button>
+          {isChunkSizeSliderVisible && (
+            <div className="slider-group">
+              <label htmlFor="chunk-size-slider">{chunkSize} word{chunkSize !== 1 ? 's' : ''}</label>
+              <input
+                id="chunk-size-slider"
+                type="range"
+                min={1}
+                max={5}
+                step={1}
+                value={chunkSize}
+                onChange={(e) => onChunkSizeChange(Number(e.target.value))}
+              />
+            </div>
+          )}
+        </div>
+        <div className="wpm-container" ref={accessibilityContainerRef}>
+          <button
+            className="primary-button wpm-button"
+            type="button"
+            aria-label="Accessibility settings"
+            onClick={onAccessibilityToggle}
+            title="Toggle adaptive features"
+          >
+            <FaUniversalAccess size={23} aria-hidden="true" color="#fff" />
+          </button>
+          {isAccessibilityVisible && (
+            <div className="checkbox-group">
+              <label htmlFor="slow-down-checkbox" title="Pause at punctuation">
+                <input
+                  id="slow-down-checkbox"
+                  type="checkbox"
+                  checked={slowDownAtSentenceEnd}
+                  onChange={(e) => onSlowDownChange(e.target.checked)}
+                />
+              </label>
+              <label htmlFor="break-at-sentence-checkbox" title="Break chunks at sentence-ending punctuation">
+                <input
+                  id="break-at-sentence-checkbox"
+                  type="checkbox"
+                  checked={breakAtSentenceEnd}
+                  onChange={(e) => onBreakAtSentenceEndChange(e.target.checked)}
+                />
+              </label>
+            </div>
+          )}
         </div>
         <button
           className="primary-button"
           type="button"
-          aria-label="Clear text"
-          onClick={onClear}
-          title="Clear all text"
+          aria-label="Theater mode"
+          onClick={onTheaterModeToggle}
+          title="Toggle theater mode"
         >
-          <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
+          <TbTheater size={23} aria-hidden="true" color="#fff" />
         </button>
         <button
           className="primary-button"
@@ -185,6 +380,15 @@ function RsvpPanel({
           ) : (
             <MdDarkMode size={23} aria-hidden="true" color="#fff" />
           )}
+        </button>
+        <button
+          className="primary-button"
+          type="button"
+          aria-label="Clear text"
+          onClick={onClear}
+          title="Clear all text"
+        >
+          <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
         </button>
         <span className="textarea-hint">Click any word to jump to it.</span>
       </div>
