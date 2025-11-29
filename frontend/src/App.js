@@ -28,6 +28,7 @@ function App() {
   const [slowDownAtSentenceEnd, setSlowDownAtSentenceEnd] = useState(true);
   const [breakAtSentenceEnd, setBreakAtSentenceEnd] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [highlightWords, setHighlightWords] = useState(true);
 
   const words = useMemo(() => {
     return text
@@ -43,6 +44,48 @@ function App() {
       document.documentElement.removeAttribute('data-theme');
     }
   }, [isDarkMode]);
+
+  // Handle fullscreen when entering/exiting theater mode
+  useEffect(() => {
+    if (isTheaterMode) {
+      // Enter fullscreen
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+          console.error('Error attempting to enable fullscreen:', err);
+        });
+      } else if (elem.webkitRequestFullscreen) { // Safari
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { // IE11
+        elem.msRequestFullscreen();
+      }
+    } else {
+      // Exit fullscreen
+      if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { // Safari
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE11
+          document.msExitFullscreen();
+        }
+      }
+    }
+  }, [isTheaterMode]);
+
+  // Handle escape key to exit theater mode
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && isTheaterMode) {
+        setIsTheaterMode(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isTheaterMode]);
 
   useEffect(() => {
     // Restart stream when user edits text while paused
@@ -200,18 +243,13 @@ function App() {
     });
   };
 
-  const handleWordJump = (cursorPosition) => {
-    const textUpToCursor = text.slice(0, cursorPosition).trim();
-    if (!textUpToCursor) {
-      setCurrentIndex(0);
-      setIsPlaying(false);
+  const handleWordJump = (wordIndex) => {
+    // wordIndex is now the direct index of the word clicked
+    if (wordIndex < 0 || wordIndex >= words.length) {
       return;
     }
     
-    const wordsBeforeCursor = textUpToCursor.split(/\s+/).filter(Boolean);
-    const targetIndex = Math.min(wordsBeforeCursor.length - 1, words.length - 1);
-    
-    setCurrentIndex(Math.max(0, targetIndex));
+    setCurrentIndex(wordIndex);
     setIsPlaying(false);
   };
 
@@ -261,6 +299,10 @@ function App() {
 
   const handleTheaterModeToggle = () => {
     setIsTheaterMode((prev) => !prev);
+  };
+
+  const handleHighlightWordsChange = (checked) => {
+    setHighlightWords(checked);
   };
 
   return (
@@ -315,6 +357,10 @@ function App() {
             onBreakAtSentenceEndChange={handleBreakAtSentenceEndChange}
             isTheaterMode={isTheaterMode}
             onTheaterModeToggle={handleTheaterModeToggle}
+            highlightWords={highlightWords}
+            onHighlightWordsChange={handleHighlightWordsChange}
+            currentIndex={currentIndex}
+            words={words}
           />
         )}
       </main>

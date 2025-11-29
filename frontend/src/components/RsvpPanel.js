@@ -48,12 +48,17 @@ function RsvpPanel({
   onBreakAtSentenceEndChange,
   isTheaterMode,
   onTheaterModeToggle,
+  highlightWords,
+  onHighlightWordsChange,
+  currentIndex,
+  words,
 }) {
   const fileInputRef = useRef(null);
   const wpmContainerRef = useRef(null);
   const fontSizeContainerRef = useRef(null);
   const chunkSizeContainerRef = useRef(null);
   const accessibilityContainerRef = useRef(null);
+  const textInputRef = useRef(null);
 
   // Click outside handler to close WPM slider
   useEffect(() => {
@@ -180,8 +185,20 @@ function RsvpPanel({
   };
 
   const handleTextareaClick = (event) => {
-    const cursorPosition = event.target.selectionStart;
-    onWordJump?.(cursorPosition);
+    // Find the closest word span that was clicked
+    let target = event.target;
+    
+    // Traverse up to find a span with data-word-index
+    while (target && target !== textInputRef.current) {
+      if (target.hasAttribute && target.hasAttribute('data-word-index')) {
+        const wordIndex = parseInt(target.getAttribute('data-word-index'), 10);
+        if (!isNaN(wordIndex)) {
+          onWordJump?.(wordIndex);
+          return;
+        }
+      }
+      target = target.parentElement;
+    }
   };
 
   const handleKeyDown = (event) => {
@@ -201,6 +218,12 @@ function RsvpPanel({
     
     // Block all other keys (character input, backspace, delete, enter, etc.)
     event.preventDefault();
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text/plain');
+    onTextChange({ target: { value: textValue + pastedText } });
   };
 
   return (
@@ -356,6 +379,14 @@ function RsvpPanel({
                   onChange={(e) => onBreakAtSentenceEndChange(e.target.checked)}
                 />
               </label>
+              <label htmlFor="highlight-words-checkbox" title="Highlight words">
+                <input
+                  id="highlight-words-checkbox"
+                  type="checkbox"
+                  checked={highlightWords}
+                  onChange={(e) => onHighlightWordsChange(e.target.checked)}
+                />
+              </label>
             </div>
           )}
         </div>
@@ -393,15 +424,64 @@ function RsvpPanel({
         <span className="textarea-hint">Click any word to jump to it.</span>
       </div>
       <div className="textarea-stack">
-        <textarea
-          id="rsvp-input"
-          value={textValue}
-          onChange={onTextChange}
+        <div 
+          ref={textInputRef}
+          className="text-input"
           onClick={handleTextareaClick}
+          onPaste={handlePaste}
           onKeyDown={handleKeyDown}
-          placeholder="Upload or paste text here"
-          rows={5}
-        />
+          data-placeholder={textValue ? '' : 'Upload or paste text here'}
+          tabIndex={0}
+          role="textbox"
+          aria-multiline="true"
+        >
+          {textValue ? (
+            (() => {
+              const parts = [];
+              let currentPos = 0;
+              
+              words.forEach((word, index) => {
+                // Find the word in the text starting from current position
+                const wordStart = textValue.indexOf(word, currentPos);
+                if (wordStart === -1) return;
+                
+                // Add any text before this word (whitespace/newlines) as plain text
+                if (wordStart > currentPos) {
+                  parts.push(
+                    <span key={`space-${index}`} className="word-space">
+                      {textValue.substring(currentPos, wordStart)}
+                    </span>
+                  );
+                }
+                
+                // Add the word with highlighting if it's in the current chunk
+                const isHighlighted = highlightWords && !isTheaterMode && index >= currentIndex && index < currentIndex + chunkSize;
+                parts.push(
+                  <span 
+                    key={`word-${index}`} 
+                    className={isHighlighted ? 'word-span highlighted-word' : 'word-span'}
+                    data-word-index={index}
+                  >
+                    {word}
+                  </span>
+                );
+                
+                currentPos = wordStart + word.length;
+              });
+              
+              // Add any remaining text after the last word
+              if (currentPos < textValue.length) {
+                parts.push(
+                  <span key="end-space" className="word-space">
+                    {textValue.substring(currentPos)}
+                  </span>
+                );
+              }
+              
+              return parts;
+            })()
+          ) : null}
+        </div>
       </div>
     </section>
   );
