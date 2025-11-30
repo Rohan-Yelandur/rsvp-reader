@@ -1,0 +1,42 @@
+.app-footer {
+    padding: 10px;
+    padding-left: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid var(--card-border);
+}
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    width: 100%;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.footer-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.footer-links a {
+    color: var(--text-secondary);
+    transition: color 200ms ease, transform 150ms ease;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: var(--accent);
+    transform: translateY(-2px);
+}

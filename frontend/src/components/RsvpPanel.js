@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import './RsvpPanel.css';
 import { IoPause, IoPlay } from 'react-icons/io5';
 import { FaFileUpload, FaBookmark } from 'react-icons/fa';
 import { FaChevronLeft, FaChevronRight, FaUniversalAccess } from 'react-icons/fa6';
@@ -212,7 +213,7 @@ function RsvpPanel({
   const handleTextareaClick = (event) => {
     // Find the closest word span that was clicked
     let target = event.target;
-    
+
     // Traverse up to find a span with data-word-index
     while (target && target !== textInputRef.current) {
       if (target.hasAttribute && target.hasAttribute('data-word-index')) {
@@ -232,15 +233,15 @@ function RsvpPanel({
     // Block: All character input
     const isCtrlCmd = event.ctrlKey || event.metaKey;
     const allowedKeys = ['v', 'a', 'c', 'x', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
-    
+
     if (isCtrlCmd && allowedKeys.includes(event.key.toLowerCase())) {
       return; // Allow shortcuts
     }
-    
+
     if (['Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
       return; // Allow navigation
     }
-    
+
     // Block all other keys (character input, backspace, delete, enter, etc.)
     event.preventDefault();
   };
@@ -412,7 +413,7 @@ function RsvpPanel({
                   onChange={(e) => onHighlightWordsChange(e.target.checked)}
                 />
               </label>
-              <label htmlFor="orp-checkbox" title="Optimal Recognition Point">
+              <label htmlFor="orp-checkbox" title="Optimal Recognition Point: makes you faster by helping you focus on words">
                 <input
                   id="orp-checkbox"
                   type="checkbox"
@@ -475,7 +476,7 @@ function RsvpPanel({
         <span className="textarea-hint">Click any word to jump to it.</span>
       </div>
       <div className="textarea-stack">
-        <div 
+        <div
           ref={textInputRef}
           className="text-input"
           onClick={handleTextareaClick}
@@ -489,12 +490,12 @@ function RsvpPanel({
           {textValue ? (
             (() => {
               const parts = [];
-              
+
               // Virtualization: only render words in a window around current position
-              const WINDOW_SIZE = 300; // Render ±300 words around current position
+              const WINDOW_SIZE = 500; // Render ±300 words around current position
               const startIndex = Math.max(0, currentIndex - WINDOW_SIZE);
               const endIndex = Math.min(words.length, currentIndex + WINDOW_SIZE);
-              
+
               // Find the text position for the start of our window
               let windowStartPos = 0;
               for (let i = 0; i < startIndex; i++) {
@@ -503,7 +504,7 @@ function RsvpPanel({
                   windowStartPos = wordPos + words[i].length;
                 }
               }
-              
+
               // If we're not starting at the beginning, add ellipsis
               if (startIndex > 0) {
                 parts.push(
@@ -512,17 +513,17 @@ function RsvpPanel({
                   </span>
                 );
               }
-              
+
               let currentPos = windowStartPos;
-              
+
               // Only process words in the visible window
               for (let index = startIndex; index < endIndex; index++) {
                 const word = words[index];
-                
+
                 // Find the word in the text starting from current position
                 const wordStart = textValue.indexOf(word, currentPos);
                 if (wordStart === -1) continue;
-                
+
                 // Add any text before this word (whitespace/newlines) as plain text
                 if (wordStart > currentPos) {
                   parts.push(
@@ -531,22 +532,22 @@ function RsvpPanel({
                     </span>
                   );
                 }
-                
+
                 // Add the word with highlighting if it's in the current chunk
                 const isHighlighted = highlightWords && !isTheaterMode && index >= currentIndex && index < currentIndex + chunkSize;
                 parts.push(
-                  <span 
-                    key={`word-${index}`} 
+                  <span
+                    key={`word-${index}`}
                     className={isHighlighted ? 'word-span highlighted-word' : 'word-span'}
                     data-word-index={index}
                   >
                     {word}
                   </span>
                 );
-                
+
                 currentPos = wordStart + word.length;
               }
-              
+
               // If we're not at the end, add ellipsis
               if (endIndex < words.length) {
                 parts.push(
@@ -555,7 +556,7 @@ function RsvpPanel({
                   </span>
                 );
               }
-              
+
               return parts;
             })()
           ) : null}

@@ -1,4 +1,6 @@
-function HeroHeader({ brandLabel = 'ZipReader'}) {
+import './HeroHeader.css';
+
+function HeroHeader({ brandLabel = 'ZipReader' }) {
   return (
     <header className="hero-header">
       <div className="brand-mark">

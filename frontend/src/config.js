@@ -1,7 +1,7 @@
 export const DEFAULT_WPM = 250;
 export const MIN_WPM = 20;
-export const MAX_WPM = 800;
-export const SENTENCE_END_DELAY_MULTIPLIER = 2.5;
+export const MAX_WPM = 700;
+export const SENTENCE_END_DELAY_MULTIPLIER = 3;
 export const COMMA_DELAY_MULTIPLIER = 1.5;
 export const HIGHLIGHT_COLOR_LIGHT = '#ffe96aff';
 export const HIGHLIGHT_COLOR_DARK = '#1f26ffff';

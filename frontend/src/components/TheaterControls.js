@@ -1,4 +1,5 @@
 import { IoPlay, IoPause, IoClose } from 'react-icons/io5';
+import './TheaterControls.css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 
 function TheaterControls({ isPlaying, onToggle, onStep, onExit }) {

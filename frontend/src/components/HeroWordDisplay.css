@@ -1,0 +1,78 @@
+.file-name-display {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 0px;
+}
+
+.hero-word {
+    font-size: clamp(3rem, 7vw, 5rem);
+    font-weight: 600;
+    color: var(--text-primary);
+    min-height: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0 5vw;
+}
+
+.hero-word.typing {
+    color: var(--text-muted);
+}
+
+.hero-word.playing {
+    color: var(--text-primary);
+}
+
+.orp-character {
+    color: #ff6b6b;
+    font-weight: 700;
+}
+
+.typed-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    font-weight: inherit;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+.static-text {
+    font-weight: inherit;
+}
+
+.typed-word-wrapper {
+    display: inline-flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.typed-word {
+    flex: 0 0 auto;
+    display: inline-block;
+    text-transform: lowercase;
+}
+
+.cursor {
+    width: 2px;
+    height: 1.2em;
+    background: currentColor;
+    display: inline-block;
+    margin-left: 4px;
+    flex: 0 0 auto;
+    animation: none;
+    opacity: 1;
+}
+
+.cursor.blink {
+    animation: blink 1s steps(1, end) infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}

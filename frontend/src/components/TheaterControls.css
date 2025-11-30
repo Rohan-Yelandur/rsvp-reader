@@ -1,0 +1,52 @@
+.theater-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 12px;
+    z-index: 1000;
+}
+
+.theater-button {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--button-bg-start), var(--button-bg-end));
+    color: var(--button-text);
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+    box-shadow: 0 18px 38px var(--button-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.theater-button::before {
+    content: attr(title);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--button-bg-start), var(--button-bg-end));
+    color: var(--button-text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+    box-shadow: 0 8px 20px var(--tooltip-shadow);
+    z-index: 10;
+}
+
+.theater-button:hover::before {
+    opacity: 1;
+}
+
+.theater-button:active {
+    transform: translateY(1px);
+}

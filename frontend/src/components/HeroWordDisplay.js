@@ -1,3 +1,5 @@
+import './HeroWordDisplay.css';
+
 // Calculate ORP index based on word length
 function getOrpIndex(word) {
   const length = word.length;
@@ -51,26 +53,26 @@ function HeroWordDisplay({
   return (
     <>
       {fileName && !isTheaterMode && <div className="file-name-display">{fileName}</div>}
-      <div 
-        className={`hero-word ${shouldShowTyping ? 'typing' : 'playing'}`} 
+      <div
+        className={`hero-word ${shouldShowTyping ? 'typing' : 'playing'}`}
         aria-live="polite"
         style={!shouldShowTyping ? { fontSize: `${fontSize}rem` } : {}}
       >
-      {shouldShowTyping ? (
-        <span className="typed-line">
-          <span className="static-text">Speed-read your</span>{' '}
-          <span className="typed-word-wrapper">
-            <span className="typed-word">{typedWord}</span>
-            <span
-              className={`cursor ${isWordComplete ? 'blink' : ''}`}
-              aria-hidden="true"
-            />
+        {shouldShowTyping ? (
+          <span className="typed-line">
+            <span className="static-text">Speed-read your</span>{' '}
+            <span className="typed-word-wrapper">
+              <span className="typed-word">{typedWord}</span>
+              <span
+                className={`cursor ${isWordComplete ? 'blink' : ''}`}
+                aria-hidden="true"
+              />
+            </span>
           </span>
-        </span>
-      ) : (
-        renderDisplayedWord()
-      )}
-    </div>
+        ) : (
+          renderDisplayedWord()
+        )}
+      </div>
     </>
   );
 }
