@@ -10,7 +10,7 @@
 
 .brand-mark {
     display: flex;
-    align-items: center;
+    margin-right: auto;
     gap: 12px;
     font-weight: 600;
     font-size: 2rem;

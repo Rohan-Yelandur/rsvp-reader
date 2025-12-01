@@ -413,7 +413,7 @@ function RsvpPanel({
                   onChange={(e) => onHighlightWordsChange(e.target.checked)}
                 />
               </label>
-              <label htmlFor="orp-checkbox" title="Optimal Recognition Point: makes you faster by helping you focus on words">
+              <label htmlFor="orp-checkbox" title="Highlight the Optimal Recognition Point">
                 <input
                   id="orp-checkbox"
                   type="checkbox"

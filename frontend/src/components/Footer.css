@@ -1,6 +1,7 @@
 .app-footer {
     padding: 10px;
     padding-left: 30px;
+    padding-right: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,6 +21,19 @@
 .footer-text {
     font-size: 0.9rem;
     color: var(--text-muted);
+}
+
+.info-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    cursor: pointer;
+    transition: color 200ms ease;
+}
+
+.info-text:hover {
+    text-decoration: underline;
+    color: var(--text-primary);
 }
 
 .footer-links {

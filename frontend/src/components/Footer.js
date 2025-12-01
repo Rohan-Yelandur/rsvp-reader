@@ -1,7 +1,7 @@
 import { FaLinkedin, FaGithub } from 'react-icons/fa';
 import './Footer.css';
 
-function Footer() {
+function Footer({ onInfoClick }) {
   return (
     <footer className="app-footer">
       <div className="footer-content">
@@ -26,6 +26,19 @@ function Footer() {
             <FaGithub size={24} />
           </a>
         </div>
+        <span
+          className="info-text"
+          onClick={onInfoClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onInfoClick();
+            }
+          }}
+        >
+          Info
+        </span>
       </div>
     </footer>
   );

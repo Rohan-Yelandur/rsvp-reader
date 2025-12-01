@@ -75,6 +75,7 @@ function App() {
   const [currentFileId, setCurrentFileId] = useState(null);
   const [isBookmarksVisible, setIsBookmarksVisible] = useState(false);
   const [orpEnabled, setOrpEnabled] = useState(false);
+  const [isInfoVisible, setIsInfoVisible] = useState(false);
 
   const words = useMemo(() => {
     return text
@@ -462,6 +463,10 @@ function App() {
     }
   };
 
+  const handleInfoToggle = () => {
+    setIsInfoVisible(prev => !prev);
+  };
+
   return (
     <div className={`app-shell ${isTheaterMode ? 'theater-mode' : ''}`}>
       {!isTheaterMode && <HeroHeader />}
@@ -533,7 +538,7 @@ function App() {
         )}
       </main>
 
-      {!isTheaterMode && <Footer />}
+      {!isTheaterMode && <Footer onInfoClick={handleInfoToggle} />}
 
       {isTheaterMode && (
         <TheaterControls
@@ -633,6 +638,35 @@ function App() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isInfoVisible && (
+        <div className="info-overlay" onClick={handleInfoToggle}>
+          <div className="info-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="info-header">
+              <h2>Info</h2>
+              <button
+                className="info-close-button"
+                onClick={handleInfoToggle}
+                aria-label="Close info"
+                title="Close"
+              >
+                <MdOutlineClear size={23} aria-hidden="true" color="#fff" />
+              </button>
+            </div>
+            <div className="info-content">
+              <p>
+                ZipReader uses the RSVP (Rapid Serial Visual Presentation) technique to help you read faster.
+                This reduces eye movement and allows you to focus on the content.
+              </p>
+              <h3>What is an Optimal Recognition Point?</h3>
+              <p>
+                The Optimal Recognition Point (ORP) is a specific letter within each word that is most crucial for the brain to process its meaning
+                We highlight the ORP in each word to help you comprehend while reading faster.
+              </p>
             </div>
           </div>
         </div>

@@ -1,1 +1,2 @@
 Session storage vs local storage
+Lazy loading chunks of text

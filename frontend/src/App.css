@@ -135,7 +135,7 @@ input[type="search"],
 	align-items: center;
 	justify-content: center;
 	z-index: 1000;
-	backdrop-filter: blur(3px);
+	backdrop-filter: blur(4px);
 }
 
 .history-modal {
@@ -296,12 +296,192 @@ input[type="search"],
 	align-items: center;
 	justify-content: center;
 	z-index: 1000;
-	backdrop-filter: blur(3px);
+	backdrop-filter: blur(4px);
 }
 
 .bookmarks-modal {
 	background: var(--card-bg);
 	border: 1px solid var(--card-border);
+	border-radius: 24px;
+	backdrop-filter: blur(12px);
+	padding: 0;
+	min-width: 450px;
+	max-width: 650px;
+	min-height: 450px;
+	max-height: 80vh;
+	box-shadow: 0 30px 60px var(--panel-shadow);
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmarks-header {
+	padding: 16px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid var(--card-border);
+	flex-shrink: 0;
+}
+
+.bookmarks-modal h2 {
+	margin: 0;
+	color: var(--text-primary);
+	font-size: 1.5rem;
+	font-weight: 600;
+}
+
+.bookmarks-close-button {
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: none;
+	border-radius: 10px;
+	background: linear-gradient(135deg, var(--button-bg-start), var(--button-bg-end));
+	color: var(--button-text);
+	cursor: pointer;
+	transition: transform 150ms ease, box-shadow 150ms ease;
+	box-shadow: 0 8px 20px var(--button-shadow);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.bookmarks-close-button:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 12px 24px var(--button-shadow);
+}
+
+.bookmarks-close-button:active {
+	transform: translateY(0);
+}
+
+.bookmarks-content {
+	padding: 16px;
+	overflow-y: auto;
+	flex: 1;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.bookmarks-content::-webkit-scrollbar {
+	display: none;
+}
+
+.add-bookmark-form {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 20px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--card-border);
+}
+
+.bookmark-input {
+	flex: 1;
+	padding: 12px 16px;
+	border: 1px solid var(--textarea-border);
+	border-radius: 12px;
+	background: var(--textarea-bg);
+	color: var(--text-primary);
+	font-size: 0.95rem;
+	font-family: inherit;
+	transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.bookmark-input:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+}
+
+.bookmark-input::placeholder {
+	color: var(--text-muted);
+}
+
+.add-bookmark-button {
+	padding: 12px 20px;
+	border: none;
+	border-radius: 12px;
+	background: linear-gradient(135deg, var(--button-bg-start), var(--button-bg-end));
+	color: var(--button-text);
+	font-weight: 500;
+	font-size: 0.95rem;
+	cursor: pointer;
+	transition: transform 150ms ease, box-shadow 150ms ease;
+	box-shadow: 0 8px 20px var(--button-shadow);
+	white-space: nowrap;
+}
+
+.add-bookmark-button:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 12px 24px var(--button-shadow);
+}
+
+.add-bookmark-button:active {
+	transform: translateY(0);
+}
+
+.bookmarks-empty {
+	color: var(--text-primary);
+	font-size: large;
+	font-weight: 500;
+	text-align: center;
+	padding: 32px 0;
+	font-style: normal;
+	margin: 0;
+}
+
+.bookmarks-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.bookmark-item {
+	padding: 14px;
+	background: var(--textarea-bg);
+	border: 1px solid var(--textarea-border);
+	border-radius: 12px;
+	transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.bookmark-item:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px var(--panel-shadow);
+	border-color: var(--accent);
+}
+
+.bookmark-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	cursor: pointer;
+}
+
+.bookmark-label {
+	color: var(--text-primary);
+	font-weight: 500;
+	font-size: 1rem;
+}
+
+.bookmark-word {
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+
+.bookmark-delete-button {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: none;
+	border-radius: 8px;
+	background: linear-gradient(135deg, #ff4757, #ff6348);
+	color: #fff;
+	cursor: pointer;
 	border-radius: 24px;
 	backdrop-filter: blur(12px);
 	padding: 0;
@@ -497,4 +677,104 @@ input[type="search"],
 
 .bookmark-delete-button:active {
 	transform: translateY(0);
+}
+
+/* Info Modal */
+.info-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	backdrop-filter: blur(4px);
+}
+
+.info-modal {
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 24px;
+	backdrop-filter: blur(12px);
+	padding: 0;
+	min-width: 400px;
+	max-width: 600px;
+	min-height: 400px;
+	max-height: 80vh;
+	box-shadow: 0 30px 60px var(--panel-shadow);
+	display: flex;
+	flex-direction: column;
+}
+
+.info-header {
+	padding: 16px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid var(--card-border);
+	flex-shrink: 0;
+}
+
+.info-modal h2 {
+	margin: 0;
+	color: var(--text-primary);
+	font-size: 1.5rem;
+	font-weight: 600;
+}
+
+.info-close-button {
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: none;
+	border-radius: 10px;
+	background: linear-gradient(135deg, var(--button-bg-start), var(--button-bg-end));
+	color: var(--button-text);
+	cursor: pointer;
+	transition: transform 150ms ease, box-shadow 150ms ease;
+	box-shadow: 0 8px 20px var(--button-shadow);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.info-close-button:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 12px 24px var(--button-shadow);
+}
+
+.info-close-button:active {
+	transform: translateY(0);
+}
+
+.info-content {
+	padding: 24px;
+	overflow-y: auto;
+	flex: 1;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	color: var(--text-primary);
+}
+
+.info-content::-webkit-scrollbar {
+	display: none;
+}
+
+.info-content h3 {
+	margin: 24px 0 12px 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.info-content h3:first-child {
+	margin-top: 0;
+}
+
+.info-content p {
+	margin: 0 0 16px 0;
+	line-height: 1.6;
+	color: var(--text-secondary);
 }
