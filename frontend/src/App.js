@@ -61,9 +61,18 @@ function App() {
   const [breakAtSentenceEnd, setBreakAtSentenceEnd] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [highlightWords, setHighlightWords] = useState(true);
-  const [fileHistory, setFileHistory] = useState([]);
+  const [fileHistory, setFileHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('rsvp-reader-history');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error('Failed to load history', e);
+      return [];
+    }
+  });
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
   const [bookmarks, setBookmarks] = useState([]);
+  const [currentFileId, setCurrentFileId] = useState(null);
   const [isBookmarksVisible, setIsBookmarksVisible] = useState(false);
   const [orpEnabled, setOrpEnabled] = useState(false);
 
@@ -83,6 +92,14 @@ function App() {
       document.documentElement.style.setProperty('--highlight-color', HIGHLIGHT_COLOR_LIGHT);
     }
   }, [isDarkMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rsvp-reader-history', JSON.stringify(fileHistory));
+    } catch (e) {
+      console.error('Failed to save history', e);
+    }
+  }, [fileHistory]);
 
   // Handle fullscreen when entering/exiting theater mode
   useEffect(() => {
@@ -143,11 +160,11 @@ function App() {
     const currentChunk = words.slice(currentIndex, currentIndex + chunkSize).join(' ');
     const hasSentenceEnd = /[.!?]/.test(currentChunk);
     const hasCommaSemicolon = /[,;]/.test(currentChunk);
-    
+
     // Apply delay multiplier based on punctuation type
     const baseIntervalMs = Math.round(60000 / wpm);
     let intervalMs = baseIntervalMs;
-    
+
     if (slowDownAtSentenceEnd) {
       if (hasSentenceEnd) {
         intervalMs = baseIntervalMs * SENTENCE_END_DELAY_MULTIPLIER;
@@ -155,7 +172,7 @@ function App() {
         intervalMs = baseIntervalMs * COMMA_DELAY_MULTIPLIER;
       }
     }
-    
+
     const timer = setInterval(() => {
       setCurrentIndex((prev) => {
         const nextIndex = prev + chunkSize;
@@ -174,9 +191,9 @@ function App() {
     if (words.length === 0) {
       return 'Ready?';
     }
-    
+
     let chunk = words.slice(currentIndex, currentIndex + chunkSize);
-    
+
     // If breakAtSentenceEnd is enabled, chunkSize > 1, truncate at sentence-ending punctuation
     if (breakAtSentenceEnd && chunkSize > 1) {
       for (let i = 0; i < chunk.length; i++) {
@@ -187,10 +204,10 @@ function App() {
         }
       }
     }
-    
+
     return chunk.join(' ');
   }, [words, currentIndex, chunkSize, breakAtSentenceEnd]);
-  
+
   const shouldShowTyping = !isPlaying && currentIndex === 0 && !hasEverPlayed;
   const isWordComplete =
     shouldShowTyping && !isDeletingWord && typedWord === TYPED_WORDS[phraseIndex];
@@ -257,7 +274,10 @@ function App() {
       setIsPlaying(false);
     }
     setCurrentIndex(0);
+    setCurrentIndex(0);
     setFileName('');
+    setCurrentFileId(null);
+    setBookmarks([]);
   };
 
   const handleUploadContent = (content, uploadedFileName = '') => {
@@ -268,19 +288,28 @@ function App() {
     setIsPlaying(false);
     setCurrentIndex(0);
     setFileName(uploadedFileName);
-    
+
+    // Clear bookmarks for new content to prevent inheritance bug
+    setBookmarks([]);
+
     // Add to file history if it has a name
     if (uploadedFileName) {
+      const newId = Date.now().toString();
+      setCurrentFileId(newId);
       setFileHistory(prev => {
         const newEntry = {
+          id: newId,
           name: uploadedFileName,
           content: content,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          bookmarks: []
         };
         // Keep only last 10 files
         const updated = [newEntry, ...prev].slice(0, 10);
         return updated;
       });
+    } else {
+      setCurrentFileId(null);
     }
   };
 
@@ -301,7 +330,7 @@ function App() {
     if (wordIndex < 0 || wordIndex >= words.length) {
       return;
     }
-    
+
     setCurrentIndex(wordIndex);
     setIsPlaying(false);
   };
@@ -374,6 +403,8 @@ function App() {
       setCurrentIndex(0);
       setIsPlaying(false);
       setIsHistoryVisible(false);
+      setBookmarks(file.bookmarks || []);
+      setCurrentFileId(file.id);
     }
   };
 
@@ -394,7 +425,18 @@ function App() {
       wordIndex: currentIndex,
       timestamp: Date.now()
     };
-    setBookmarks(prev => [newBookmark, ...prev]);
+
+    const updatedBookmarks = [newBookmark, ...bookmarks];
+    setBookmarks(updatedBookmarks);
+
+    if (currentFileId) {
+      setFileHistory(prev => prev.map(file => {
+        if (file.id === currentFileId) {
+          return { ...file, bookmarks: updatedBookmarks };
+        }
+        return file;
+      }));
+    }
   };
 
   const handleLoadBookmark = (index) => {
@@ -407,7 +449,17 @@ function App() {
   };
 
   const handleDeleteBookmark = (index) => {
-    setBookmarks(prev => prev.filter((_, i) => i !== index));
+    const updatedBookmarks = bookmarks.filter((_, i) => i !== index);
+    setBookmarks(updatedBookmarks);
+
+    if (currentFileId) {
+      setFileHistory(prev => prev.map(file => {
+        if (file.id === currentFileId) {
+          return { ...file, bookmarks: updatedBookmarks };
+        }
+        return file;
+      }));
+    }
   };
 
   return (
@@ -480,9 +532,9 @@ function App() {
           />
         )}
       </main>
-      
+
       {!isTheaterMode && <Footer />}
-      
+
       {isTheaterMode && (
         <TheaterControls
           isPlaying={isPlaying}
@@ -491,14 +543,14 @@ function App() {
           onExit={handleTheaterModeToggle}
         />
       )}
-      
+
       {isHistoryVisible && (
         <div className="history-overlay" onClick={handleHistoryToggle}>
           <div className="history-modal" onClick={(e) => e.stopPropagation()}>
             <div className="history-header">
               <h2>File History</h2>
-              <button 
-                className="history-close-button" 
+              <button
+                className="history-close-button"
                 onClick={handleHistoryToggle}
                 aria-label="Close history"
                 title="Close"
@@ -512,15 +564,15 @@ function App() {
               ) : (
                 <div className="history-list">
                   {fileHistory.map((file, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="history-item"
                     >
                       <div className="history-info" onClick={() => handleLoadHistoryFile(index)}>
                         <span className="history-filename">{file.name}</span>
                         <span className="history-date">{new Date(file.timestamp).toLocaleString()}</span>
                       </div>
-                      <button 
+                      <button
                         className="history-delete-button"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -545,8 +597,8 @@ function App() {
           <div className="bookmarks-modal" onClick={(e) => e.stopPropagation()}>
             <div className="bookmarks-header">
               <h2>Bookmarks</h2>
-              <button 
-                className="bookmarks-close-button" 
+              <button
+                className="bookmarks-close-button"
                 onClick={handleBookmarksToggle}
                 aria-label="Close bookmarks"
                 title="Close"
@@ -561,15 +613,15 @@ function App() {
               ) : (
                 <div className="bookmarks-list">
                   {bookmarks.map((bookmark, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="bookmark-item"
                     >
                       <div className="bookmark-info" onClick={() => handleLoadBookmark(index)}>
                         <span className="bookmark-label">{bookmark.label}</span>
                         <span className="bookmark-word">Word {bookmark.wordIndex + 1}: {words[bookmark.wordIndex]}</span>
                       </div>
-                      <button 
+                      <button
                         className="bookmark-delete-button"
                         onClick={() => handleDeleteBookmark(index)}
                         aria-label="Delete bookmark"
