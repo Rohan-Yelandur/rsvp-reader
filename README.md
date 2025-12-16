@@ -1,6 +1,6 @@
 # ZipReader
 
-Hosted at: _________
+Hosted at: zipreader.vercel.app
 
 Displays words in a text one-by-one rather than page-by-age.
 This technique called Rapid Serial Visual Presentation (RSVP) can more than **double** your reading speed!
